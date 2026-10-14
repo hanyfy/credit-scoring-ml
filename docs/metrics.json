@@ -1,0 +1,36 @@
+{
+  "logistic_regression": {
+    "cv_auc_train": 0.768,
+    "test_auc": 0.804,
+    "test_gini": 0.608,
+    "test_ks": 0.528,
+    "test_brier": 0.156,
+    "threshold": 0.14,
+    "test_cost_per_applicant": 0.6
+  },
+  "gradient_boosting": {
+    "cv_auc_train": 0.775,
+    "test_auc": 0.816,
+    "test_gini": 0.632,
+    "test_ks": 0.486,
+    "test_brier": 0.154,
+    "threshold": 0.1,
+    "test_cost_per_applicant": 0.46
+  },
+  "baselines_test_cost_per_applicant": {
+    "approve_everyone": 1.5,
+    "reject_everyone": 0.7
+  },
+  "chosen_model": "gradient_boosting",
+  "psi_train_vs_test_scores": 0.046,
+  "n_train": 750,
+  "n_test": 250,
+  "bad_rate": 0.3,
+  "top_features": [
+    "checking_status",
+    "purpose",
+    "duration",
+    "credit_amount",
+    "credit_history"
+  ]
+}

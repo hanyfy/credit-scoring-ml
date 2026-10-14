@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scoring de crédit — démo</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--mut:#6b7686;--acc:#1f5fbf;--ok:#1d8a4b;--ko:#c23b3b;--line:#e1e5eb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--card:#18202a;--ink:#e8edf3;--mut:#93a0b1;--line:#2a3441}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:1000px;margin:0 auto;padding:24px 16px}h1{font-size:22px;margin:0 0 4px}p.sub{color:var(--mut);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:1fr 320px;gap:16px}@media(max-width:800px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+form{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px 14px}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
+input,select{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+button{grid-column:1/-1;margin-top:6px;padding:10px;border:0;border-radius:8px;background:var(--acc);color:#fff;font-weight:600;cursor:pointer}
+.big{font-size:40px;font-weight:700}.pill{display:inline-block;padding:3px 10px;border-radius:99px;color:#fff;font-weight:600;font-size:13px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:10px 0}.bar>div{height:100%}
+small{color:var(--mut)}
+</style></head><body><main>
+<h1>Scoring de crédit — démonstration</h1>
+<p class="sub">Modèle entraîné sur le jeu public German Credit (UCI). Projet de démonstration : à ne pas utiliser pour une vraie décision de crédit.</p>
+<div class="grid">
+<div class="card"><form id="f"></form></div>
+<div class="card" id="res"><small>Renseignez le dossier puis lancez le calcul.</small></div>
+</div>
+<script>
+const f=document.getElementById('f'),res=document.getElementById('res');
+const params=new URLSearchParams(location.search);
+fetch('/schema').then(r=>r.json()).then(s=>{
+  for(const [k,m] of Object.entries(s.numeric)){
+    const v=params.get(k)??m.median;
+    f.insertAdjacentHTML('beforeend',`<label>${k}<input name="${k}" type="number" step="any" min="${m.min}" max="${m.max}" value="${v}"></label>`);}
+  for(const [k,m] of Object.entries(s.categorical)){
+    const v=params.get(k)??m.mode;
+    f.insertAdjacentHTML('beforeend',`<label>${k}<select name="${k}">${m.values.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('')}</select></label>`);}
+  f.insertAdjacentHTML('beforeend','<button>Calculer le risque</button>');
+  if(params.get('demo'))f.requestSubmit();
+});
+f.onsubmit=async e=>{e.preventDefault();
+  const feat={};new FormData(f).forEach((v,k)=>feat[k]=f.elements[k].type==='number'?Number(v):v);
+  const r=await fetch('/predict',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({features:feat})});
+  const d=await r.json();
+  if(!r.ok){res.innerHTML='<small>Erreur : '+JSON.stringify(d.detail)+'</small>';return;}
+  const refuse=d.decision.startsWith('refus'),col=refuse?'var(--ko)':'var(--ok)',pc=(d.default_probability*100).toFixed(1);
+  res.innerHTML=`<small>Probabilité de défaut estimée</small><div class="big">${pc} %</div>
+  <div class="bar"><div style="width:${pc}%;background:${col}"></div></div>
+  <span class="pill" style="background:${col}">${d.decision}</span>
+  <p><small>Risque ${d.risk_band} · seuil de décision ${(d.threshold*100).toFixed(0)} %</small></p>`;};
+</script></main></body></html>
