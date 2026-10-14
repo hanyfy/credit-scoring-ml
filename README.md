@@ -2,7 +2,15 @@
 
 Modèle de **scoring de crédit** de bout en bout sur un jeu public : préparation, comparaison de modèles, choix d'un seuil de décision selon une matrice de coûts, explicabilité, suivi de dérive (PSI), API FastAPI et petit front web.
 
+> **EN —** End-to-end credit-scoring model on a public dataset (German Credit): model comparison, a decision threshold chosen from a cost matrix, explainability, drift monitoring (PSI), FastAPI service and a small web front. Demo project, not for real credit decisions.
+
 > Données : [German Credit (UCI Statlog)](https://archive.ics.uci.edu/ml/datasets/statlog+(german+credit+data)), 1 000 dossiers publics, téléchargés via OpenML. Projet de **démonstration** : aucune donnée client, aucun usage pour une vraie décision de crédit.
+
+## Le problème
+Une banque doit décider d'accorder ou non un crédit en estimant la probabilité de défaut. Ce n'est pas qu'un score : il faut **choisir un seuil** en tenant compte du fait qu'un mauvais crédit accordé coûte bien plus qu'un bon dossier refusé, **expliquer** le modèle, et **surveiller** sa stabilité dans le temps.
+
+## Ce que ça démontre (et ce que ça ne démontre pas)
+Un cycle complet de modélisation rigoureux (CV, jeu de test réservé, seuil choisi sans regarder le test, exclusion de variables sensibles), puis son exposition en API avec validation stricte. Ce n'est **pas** un modèle utilisable en production : jeu de 1994, 1 000 lignes, pas de calibration ni d'analyse d'équité complète.
 
 ![Front de démonstration](docs/front.png)
 *Capture réelle du front, dossier d'exemple saisi à la main.*
